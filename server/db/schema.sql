@@ -13,7 +13,15 @@ create table users (
   password_hash varchar(255) not null,
   is_verified boolean default false,
   created_at timestamp default current_timestamp,
-  updated_at timestamp default current_timestamp
+  updated_at timestamp default current_timestamp,
+);
+
+create table verification_codes (
+    id serial primary key,
+    user_id int references users(id) on delete cascade,
+    code char(6) not null check (code ~ '^\d{6}$'),
+    expires_at timestamp not null,
+    created_at timestamp default now()
 );
 
 create table todos (

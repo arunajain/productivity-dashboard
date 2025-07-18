@@ -5,14 +5,14 @@ const findUserByEmail = async (email) => {
   return result.rows[0]; 
 };
 
-const createUser = async (name, email, hashedPassword) => {
+const createUser = async (name, email, hashedPassword, code) => {
   const result = await pool.query(
-    `INSERT INTO users (name, email, password)
-     VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING;
+    `INSERT INTO users (name, email, password, verification_code)
+     VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING;
      RETURNING id, name, email`,
     [name, email, hashedPassword]
   );
-  return result.rows[0]; 
+  return result.rows[0];
 };
 
 module.exports = {

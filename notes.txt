@@ -158,3 +158,6 @@ Why Use a Pool?
 	•	Reuses database connections (better performance)
 	•	Manages concurrent queries efficiently
 	•	Automatically releases unused connections
+
+
+If you’re worried about email being spoofed, you can return just the user.id in step 1 and verify based on that.
