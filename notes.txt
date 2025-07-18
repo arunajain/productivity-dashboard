@@ -1,0 +1,160 @@
+
+It creates a namespaced debug logger.
+	•	In this case, the namespace is 'server:server'.
+	•	You use debug(...) to print debug messages only when you want to, by enabling the namespace via an environment variable.
+
+const debug = require('debug')('server:server');
+
+debug('Server is starting...');
+
+DEBUG=server:server node app.js   # On Linux/Mac
+
+server:server Server is starting... +0ms
+
+Why use debug instead of console.log?
+	•	You can turn debugging on/off without changing your code.
+	•	You can control what logs you see via namespaces.
+	•	It helps keep production logs clean.
+
+You can use wildcards:
+DEBUG=server:* node app.js
+To show all logs with the prefix server:
+
+Great! Let’s set up the debug module properly across your Express app to make your backend debugging clean and structured, especially useful for your Personal Productivity Dashboard project.
+Use Namespaced Debuggers
+Let’s break logging into logical namespaces. For example:
+	•	app → app startup
+	•	routes:todo → To-Do List routes
+	•	routes:auth → Authentication
+	•	services:db → DB or service layer logs
+DEBUG=app,routes:*,services:* nodemon app.js
+Output exampleapp Server started on port 3000 +0ms
+  routes:todo Fetching all todo items +10ms
+  services:db Connecting to database... +20ms
+
+lso install supertest if you’re testing routes:
+  npm install --save-dev supertest
+  npm test
+
+
+  Want Mocha + Chai instead?
+
+  No problem. Here’s the basic setup:
+
+  npm install --save-dev mocha chai supertest
+  todo.test.js
+  const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('../app'); // assuming this is where you export your express app
+
+chai.use(chaiHttp);
+const expect = chai.expect;
+
+describe('GET /api/todo', () => {
+  it('should return todos', (done) => {
+    chai.request(app)
+      .get('/api/todo')
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        done();
+      });
+  });
+});
+
+Use describe, it, beforeEach to organize your tests.
+	•	✅ Create mock data and test edge cases (e.g. empty input, invalid data).
+	•	✅ Use jest.mock() or libraries like sinon for mocking services (e.g., DB).
+	•	✅ Integrate test coverage: jest --coverage
+
+Would you like me to create a small ready-to-run test setup for your todo route or auth API?
+
+Perfect! Here’s a ready-to-run test setup for your todo API using Jest and Supertest — ideal for your Personal Productivity Dashboard backend.
+
+Create a simple Express API (/api/todo) and test it with Jest.
+---------------------------------
+routes/todo.js
+
+const express = require('express');
+const router = express.Router();
+
+// Sample in-memory data
+const todos = [
+  { id: 1, task: 'Learn Node.js' },
+  { id: 2, task: 'Write Tests' }
+];
+
+router.get('/', (req, res) => {
+  res.status(200).json(todos);
+});
+
+module.exports = router;
+-------------------------------------
+tests/todo.test.js — Jest Test File
+const request = require('supertest');
+const app = require('../app');
+
+describe('GET /api/todo', () => {
+  it('should return an array of todos', async () => {
+    const res = await request(app).get('/api/todo');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).toHaveProperty('task');
+  });
+});
+
+install: npm install --save-dev jest supertest
+Run : npm test
+Expected Output: 
+PASS  tests/todo.test.js
+  ✓ should return an array of todos (xx ms)
+
+Optional: Test Coverage
+
+npm test -- --coverage
+
+----------------------------------
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URI
+});
+
+module.exports = pool;
+
+Explanation of the above code:
+
+const { Pool } = require('pg');
+	•	This line imports the Pool class from the pg (PostgreSQL) Node.js library.
+	•	Pool is a connection pool manager — it helps your app manage multiple connections to the PostgreSQL database efficiently.
+	•	pg is the PostgreSQL client for Node.js.
+const pool = new Pool({ connectionString: process.env.POSTGRES_URI });
+	•	This creates a new pool instance, which is how you’ll interact with your database.
+	•	Instead of hardcoding credentials (host, port, user, password, db name), you’re using:
+  connectionString: process.env.POSTGRES_URI
+
+  process.env.POSTGRES_URI comes from your .env file and usually looks like:
+
+  POSTGRES_URI=postgresql://username:password@localhost:5432/dbname
+
+  Using .env keeps sensitive info (like passwords) out of your source code.
+  module.exports = pool;
+	•	This exports the pool object so it can be used in other parts of your backend app, like:
+  const pool = require('../config/db');
+
+  Example Usage in Your App
+
+  const pool = require('../config/db');
+
+pool.query('SELECT * FROM users', (err, result) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(result.rows);
+  }
+});
+
+Why Use a Pool?
+	•	Reuses database connections (better performance)
+	•	Manages concurrent queries efficiently
+	•	Automatically releases unused connections

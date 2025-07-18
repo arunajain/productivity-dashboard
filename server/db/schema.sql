@@ -11,6 +11,7 @@ create table users (
   name varchar(100),
   email varchar(100) unique not null,
   password_hash varchar(255) not null,
+  is_verified boolean default false,
   created_at timestamp default current_timestamp,
   updated_at timestamp default current_timestamp
 );
