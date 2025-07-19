@@ -1,7 +1,7 @@
-const express = require(express);
+import express from 'express';
 const router = express.Router();
-const { registerUser } = require('../controllers/auth/register');
-const { verifyEmailCode } = require('../controllers/auth/verify-email-code');
+import {registerUser} from '../controllers/auth/register.js';
+import verifyEmailCode from '../controllers/auth/verify-email-code.js';
 router.post('/register', registerUser);
 router.post('/verify_email', verifyEmailCode);
-module.exports = router;
+export default router;

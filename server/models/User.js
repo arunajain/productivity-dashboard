@@ -1,23 +1,27 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
-const findUserByEmail = async (email) => {
+export const findUserByEmail = async (email) => {
   const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
   return result.rows[0]; 
 };
 
-const createUser = async (name, email, hashedPassword, code) => {
+export const createUser = async (name, email, hashedPassword, code) => {
   const result = await pool.query(
     `INSERT INTO users (name, email, password, verification_code)
-     VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING;
+     VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING
      RETURNING id, name, email`,
-    [name, email, hashedPassword]
+    [name, email, hashedPassword, code] // ← you forgot code param in values list
   );
   return result.rows[0];
 };
 
-module.exports = {
-  findUserByEmail,
-  createUser
+export const updateUserSingleColumn = async (columnName, columnValue, userId) => {
+  const allowedColumns = ['name', 'email', 'is_verified']; 
+  if (!allowedColumns.includes(columnName)) {
+    throw new Error('Invalid column name');
+  }
+
+  const query = `UPDATE users SET ${columnName} = $1 WHERE id = $2`;
+  const result = await pool.query(query, [columnValue, userId]);
+  return result;
 };
-
-
