@@ -16,6 +16,7 @@ export const validateCode = async (email, code) => {
       'SELECT * FROM verification_codes WHERE user_id = $1 AND code = $2 AND expires_at > now()',
       [res.id, code]
     );
+    console.log('result from validate code - ', result)
     return result.rows[0];
   }
   return null;

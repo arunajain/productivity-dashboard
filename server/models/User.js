@@ -5,12 +5,12 @@ export const findUserByEmail = async (email) => {
   return result.rows[0]; 
 };
 
-export const createUser = async (name, email, hashedPassword, code) => {
+export const createUser = async (name, email, hashedPassword) => {
   const result = await pool.query(
-    `INSERT INTO users (name, email, password, verification_code)
-     VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING
+    `INSERT INTO users (name, email, password_hash)
+     VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING
      RETURNING id, name, email`,
-    [name, email, hashedPassword, code] // ← you forgot code param in values list
+    [name, email, hashedPassword] // ← you forgot code param in values list
   );
   return result.rows[0];
 };
