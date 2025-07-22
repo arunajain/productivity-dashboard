@@ -1,11 +1,10 @@
-import { validateRegister, validateLogin, validateVerifyEmailBody } from '../validators/authValidator.js';
-import { findUserByEmail, createUser } from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { validateRegister, validateLogin, validateVerifyEmailBody, validateChangePwdBody } from '../validators/authValidator.js';
+import { findUserByEmail, createUser, updateUserSingleColumn, getUserById } from '../models/User.js';
 import { createVerificationCode, validateCode, deleteCodes } from '../models/VerificationCode.js';
 import generateRandomCode from '../utils/generateRandomCode.js';
 import sendEmail from '../utils/sendEmail.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { updateUserSingleColumn } from '../../models/User.js';
 
 export const registerUser = async(req, res) => {
     try{
@@ -54,15 +53,15 @@ export const verifyEmailCode = async(req, res) => {
             //email verified so, delete entry from verification table and and set is_verified in user_table to true
             await deleteCodes(code_dtl.user_id);
             await updateUserSingleColumn('is_verified', true, code_dtl.user_id);
-            res.status(200).json({msg: 'Email verified successfully. You can now log in to your account.'});
+            return res.status(200).json({msg: 'Email verified successfully. You can now log in to your account.'});
         }
         else{
-            res.status(200).json({msg: 'The code you entered is incorrect or has expired.'});
+            return res.status(200).json({msg: 'The code you entered is incorrect or has expired.'});
         }
         
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({msg: 'Server Error'})
+        return res.status(500).json({msg: 'Server Error'})
     }
 }
 
@@ -83,9 +82,38 @@ export const login = async(req, res) => {
         
         const token = jwt.sign({id: user.id}, process.env.JWT_SECRET_KEY, {expiresIn : '2h'});
         const {id, name, email: emailId} = user;
-        res.status(200).json({success: true, msg: 'Login Successful', user: {id: id, name: name, email: emailId}, token});
+        return res.status(200).json({success: true, msg: 'Login Successful', user: {id: id, name: name, email: emailId}, token});
     } catch (error) {
         console.log(error)
-        res.status(500).json({ msg: 'Server error' });
+        return res.status(500).json({ msg: 'Server error' });
     }
 }
+
+export const changePassword = async(req, res) => {
+    const { error } = validateChangePwdBody(req.body);
+    if(error) return res.status(400).json({msg : error.details[0].message});
+
+    const {currentPassword, newPassword} = req.body;
+    try {
+        const user = getUserById(req.user.id);
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if(!isMatch) return res.status(400).json({msg: 'Incorrect current password'});
+
+        const newPasswordHashed = await bcrypt.hash(newPassword, 10);
+        await updateUserSingleColumn(password_hash, newPasswordHashed, req.user.id);
+        return res.status(200).json({msg: 'Password changed successfully'})
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({msg: "Server Error - while changing password"})
+    }
+
+}
+
+export const forgotPassword = async (req, res) => {
+
+};
+
+export const resetPassword = async (req, res) => {
+
+};

@@ -1,16 +1,20 @@
 import pool from '../config/db.js';
 
+export const getUserById = async(user_id) => {
+  const result = await pool.query(`Select * from user where id = $1`,[user_id]);
+  return result.rows[0];
+}
 
 export const findUserByEmail = async (email) => {
-  const result = await pool.query('SELECT id, name, email, password_hash, is_verified  FROM users WHERE email = $1', [email]);
+  const result = await pool.query('select id, name, email, password_hash, is_verified  from users where email = $1', [email]);
   return result.rows[0]; 
 };
 
 export const createUser = async (name, email, hashedPassword) => {
   const result = await pool.query(
-    `INSERT INTO users (name, email, password_hash)
-     VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING
-     RETURNING id, name, email`,
+    `insert into users (name, email, password_hash)
+     values ($1, $2, $3) ON CONFLICT (email) do nothing
+     returning id, name, email`,
     [name, email, hashedPassword] // ← you forgot code param in values list
   );
   return result.rows[0];
