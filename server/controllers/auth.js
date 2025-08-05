@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { validateRegister, validateLogin, validateVerifyEmailBody, validateChangePwdBody } from '../validators/authValidator.js';
+import { validateRegister, validateLogin, validateVerifyEmailBody, validateChangePwdBody, validateForgetPasswordBody, validateResetPasswordBody } from '../validators/authValidator.js';
 import { findUserByEmail, createUser, updateUserSingleColumn, getUserById } from '../models/User.js';
 import { createVerificationCode, validateCode, deleteCodes } from '../models/VerificationCode.js';
 import generateRandomCode from '../utils/generateRandomCode.js';
@@ -107,13 +107,56 @@ export const changePassword = async(req, res) => {
         console.log(error)
         res.status(500).json({msg: "Server Error - while changing password"})
     }
-
 }
 
 export const forgotPassword = async (req, res) => {
+    const { error } = validateForgetPasswordBody(req.body);
+    if(error) return res.status(400).json({msg : error.details[0].message});
 
+    let { email } = req.body;
+    try {
+        const user = findUserByEmail(email);
+        if(!user) res.status(401).json({success: false, msg: "User with that email does not exit", user: null});
+        console.log('user - ', user);
+
+        const emailCode = generateRandomCode(6);
+        console.log("Generated email code:", emailCode);
+        const expiresAt = new Date(Date.now() + 15*60*1000);//15 mins
+        console.log(expiresAt);
+        await deleteCodes(user.id);
+        await createVerificationCode(user.id, emailCode, expiresAt);
+        sendEmail(email, name, emailCode,"register",req,res).catch(err => {
+            console.error("Email failed:", err);
+        });
+
+        res.status(200).json({msg: 'Reset code sent to verified email.'});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Server error' });
+    }
 };
 
 export const resetPassword = async (req, res) => {
+    try {
+        const { error } = validateResetPasswordBody(req.body);
+        if (error) return res.status(422).json({msg: error.details[0].message});
 
+        const { email, code, newPassword } = req.body;
+        const code_dtl = await validateCode(email, code);
+        if(code_dtl){
+            // console.log('result - ', code_dtl);
+            //email verified so, delete entry from verification table and and set is_verified in user_table to true
+            await deleteCodes(code_dtl.user_id);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await updateUserSingleColumn('password_hash', hashedPassword, code_dtl.user_id);
+            return res.status(200).json({msg: 'Password Reset successfully. You can now log in to your account with the new password.'});
+        }
+        else{
+            return res.status(200).json({msg: 'The code you entered is incorrect or has expired.'});
+        }
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({msg: 'Server Error'})
+    }
 };

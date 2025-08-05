@@ -160,4 +160,61 @@ Why Use a Pool?
 	•	Automatically releases unused connections
 
 
-If you’re worried about email being spoofed, you can return just the user.id in step 1 and verify based on that.
+--------------------------------------------
+Joi is a popular Node.js library used for validating data schemas (like user input). It allows you to define clear, declarative rules for objects, strings, numbers, etc., and returns detailed errors if validation fails. Great for validating requests in Express APIs.
+
+----------------------------------------------
+JWT Token Authentication:
+
+Yes, absolutely — for your personal project, sending the JWT in the JSON response body is perfectly fine and commonly used in many real-world API-based applications, especially when:
+	•	You’re building a React frontend separately from your Node.js backend (which you are),
+	•	You’re using localStorage or sessionStorage to store the token on the client,
+	•	You have control over the client code and use Authorization: Bearer <token> in API requests.
+✅ Just follow these best practices:
+	1.	Always use HTTPS in production to protect the token in transit.
+	2.	Set a short token expiry (e.g., 15 min to 1 hour) and support token refresh if needed.
+	3.	Store token securely on the client — localStorage is okay for personal projects but avoid storing highly sensitive data there.
+	4.	Send the token in the Authorization header on future requests:
+
+  Authorization: Bearer <your_jwt_token>
+
+  Example Response from Server:
+  js
+  res.status(200).json({
+  status: 'success',
+  message: 'Login successful',
+  token: jwtToken,
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email
+  }
+});
+client 
+localStorage.setItem('token', response.data.token);
+axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+--------------------------------------
+Error handling using Middleware(Why and When to use)
+
+
+
+
+---------------------------------------
+Frontend Request Example (React fetch)
+
+const token = localStorage.getItem('token');
+
+const res = await fetch('/api/auth/change-password', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    currentPassword: 'oldpassword123',
+    newPassword: 'newpassword456'
+  })
+});
+const data = await res.json();
+console.log(data);
