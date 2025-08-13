@@ -40,7 +40,6 @@ EMAIL_USER=example@example.com
 EMAIL_PASS=example_password
 
 ### 4 Database Setup
-
 ## Create the database
 Make sure PostgreSQL is installed and running. Then:
 ```bash
@@ -50,6 +49,7 @@ createdb productivity_dashboard
 ```bash
 psql -d productivity_dashboard -f db/schema.sql
 ```
+
 ### 5 Start the development server
 ```bash
 npm start
