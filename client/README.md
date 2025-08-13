@@ -30,10 +30,10 @@ npm install
 ```
 ### 3 Configure environment variables
 Create a .env file inside the client folder:
-```bash
+
 VITE_API_BASE_URL=http://localhost:5000
 VITE_WEATHER_API_KEY=your_openweather_api_key
-```
+
 ### 4 Start the development server
 
 ```bash
@@ -41,3 +41,4 @@ npm run dev
 ```
 ### 5 API Connection
 The frontend communicates with the backend via the VITE_API_BASE_URL defined in .env.
+
