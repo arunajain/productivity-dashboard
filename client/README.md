@@ -39,4 +39,5 @@ VITE_WEATHER_API_KEY=your_openweather_api_key
 ```bash
 npm run dev
 ```
-
+### 5 API Connection
+The frontend communicates with the backend via the VITE_API_BASE_URL defined in .env.
