@@ -128,7 +128,6 @@ export const forgotPassword = async (req, res) => {
         sendEmail(email, name, emailCode,"register",req,res).catch(err => {
             console.error("Email failed:", err);
         });
-
         res.status(200).json({msg: 'Reset code sent to verified email.'});
     } catch (error) {
         console.error(error);
