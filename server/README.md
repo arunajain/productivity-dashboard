@@ -40,12 +40,12 @@ EMAIL_USER=example@example.com
 EMAIL_PASS=example_password
 ```
 ### 4 Database Setup
-## Create the database
+#### Create the database
 Make sure PostgreSQL is installed and running. Then:
 ```bash
 createdb productivity_dashboard
 ```
-## Run schema.sql
+#### Run schema.sql
 ```bash
 psql -d productivity_dashboard -f db/schema.sql
 ```
