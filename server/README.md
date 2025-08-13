@@ -31,14 +31,14 @@ npm install
 ```
 ### 3 Configure environment variables
 Create a .env file inside the server folder:
-
+```plaintext
 PORT=5000
 POSTGRES_URI=postgresql://username:password@localhost:5432/productivity_dashboard
 JWT_SECRET_KEY=your_jwt_secret
 REFRESH_TOKEN_SECRET_KEY=your_refresh_secret
 EMAIL_USER=example@example.com
 EMAIL_PASS=example_password
-
+```
 ### 4 Database Setup
 ## Create the database
 Make sure PostgreSQL is installed and running. Then:
