@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { verifyEmail } from '../../api/authService';
+import VerificationStatus from "./VerificationStatus";
 
 const testCode = (code: string) : boolean => /^\d{0,6}$/.test(code);
 
@@ -16,6 +17,8 @@ const VerifyEmail: React.FC = () => {
     email: location.state?.email || localStorage.getItem("pendingEmail"),
     code: ''
   });
+  const [showVerification, setShowVerfication] = useState<Boolean>(false);
+  const [seconds, setSeconds] = useState(5);
   const [error, setError] = useState("");
   
 
@@ -43,15 +46,29 @@ const VerifyEmail: React.FC = () => {
       const res = await verifyEmail(formData);
       console.log(res);
       if (res.status === 200) {
+        setShowVerfication(true);
         localStorage.removeItem("pendingEmail");
-        navigate("/login");
-      }
+      }  
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
   };
 
-  return (
+  useEffect(() => {
+    if (!showVerification) return; 
+
+    if (seconds > 0) {
+      const timer = setTimeout(() => setSeconds(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      navigate("/login");
+    }
+  }, [seconds, showVerification, navigate]);
+
+  return(
+    <>
+    {!showVerification ? (
+    
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         {/* Header */}
@@ -94,7 +111,14 @@ const VerifyEmail: React.FC = () => {
         </form>
       </div>
     </div>
+    ) : (
+     <VerificationStatus
+            title="Email Verification"
+            message={`Your Email has been verified successfully. Redirecting to login in `} seconds={seconds}
+          />
+          )}
+  </>
   );
-};
+}
 
 export default VerifyEmail;

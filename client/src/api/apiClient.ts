@@ -16,11 +16,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Example: redirect to login if unauthorized
-      window.location.href = "/login";
-    }
-    if(error.response?.status === 400 || error.response?.status === 404 || error.response?.status === 422 || error.response?.status === 401){
+    if(error.response?.status === 400 || error.response?.status === 404 || error.response?.status === 422 || error.response?.status === 401 || error.response?.status === 403){
         const serverMsg = error.response?.data?.msg || "Something went wrong";
         return Promise.reject({ ...error, message: serverMsg });
     }

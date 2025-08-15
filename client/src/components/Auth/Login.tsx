@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from '../../api/authService';
 
 interface LoginData {
@@ -8,7 +8,7 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginData>({ email: "", password: "" });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -35,7 +35,7 @@ const Login: React.FC = () => {
       console.log(res);
       if (res.status === 200) {
         console.log('heree')
-        localStorage.removeItem("pendingEmail");
+        navigate("/dashboard");
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong");

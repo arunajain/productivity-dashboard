@@ -70,21 +70,24 @@ export const verifyEmailCode = async(req, res) => {
 
 export const login = async(req, res) => {
     try {
-        console.log(req.body)
         const { error } = validateLogin(req.body);
         if(error) return res.status(422).json({msg : error.details[0].message});
         const {email, password} = req.body;
         const user = await findUserByEmail(email);
-        console.log('user - ', user)
         if(!user) return res.status(401).json({success: false, msg: "User with given email does not exit", user: null});
 
         if(!user.is_verified) return res.status(403).json({success: false, msg: "Please verify your email before logging in.", user: null});
         
         const isMatch = await bcrypt.compare(password, user.password_hash);
-        console.log(isMatch)
         if(!isMatch) return res.status(400).json({success: false, msg: 'Invalid Password', user: null});
         
         const token = jwt.sign({id: user.id}, process.env.JWT_SECRET_KEY, {expiresIn : '2h'});
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // only https in production
+            sameSite: "Strict", // or 'Lax' depending on your cross-site needs
+            maxAge: 60 * 60 * 1000 // 1 hour
+        });
         const {id, name, email: emailId} = user;
         return res.status(200).json({success: true, msg: 'Login Successful', user: {id: id, name: name, email: emailId}, token});
     } catch (error) {
@@ -99,7 +102,7 @@ export const changePassword = async(req, res) => {
 
     const {currentPassword, newPassword} = req.body;
     try {
-        const user = getUserById(req.user.id);
+        const user = await getUserById(req.user.id);
         const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
         if(!isMatch) return res.status(400).json({msg: 'Incorrect current password'});
 
@@ -119,7 +122,7 @@ export const forgotPassword = async (req, res) => {
 
     let { email } = req.body;
     try {
-        const user = findUserByEmail(email);
+        const user = await findUserByEmail(email);
         if(!user) res.status(401).json({success: false, msg: "User with that email does not exit", user: null});
         console.log('user - ', user);
 
@@ -162,4 +165,18 @@ export const resetPassword = async (req, res) => {
         console.log(error.message);
         return res.status(500).json({msg: 'Server Error'})
     }
+};
+
+export const authMe = async (req, res) => {
+  try {
+    console.log(req.user.id)
+    const user = await getUserById(req.user.id);
+    console.log(user);
+    // const {id, name, email: emailId} = user;
+    if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+    return res.status(200).json({success: true,  user: {id: user.id, name: user.name, email: user.email}});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, msg: "Server error" });
+  }
 };
