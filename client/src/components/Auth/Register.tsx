@@ -1,24 +1,31 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ChangeEvent } from "react";
 import type { FormEvent } from "react";
 import logo from "../../assets/productivity_logo.jpeg"; // adjust path
-import { API_BASE_URL } from "../../config/api.ts";
+import { registerUser } from '../../api/authService';
+
 
 interface FormData {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
+const matchPasswords = (password: string, confirmPassword:string) => password === confirmPassword 
+
 const Register: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
+    confirmPassword: ""
   });
 
   const [error, setError] = useState<string>("");
-
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -32,34 +39,22 @@ const Register: React.FC = () => {
       return;
     }
 
+    if(!matchPasswords(formData.password, formData.confirmPassword)){
+      setError("Passwords do not match");
+      return
+    }
+    
     try {
-      setError(""); // Clear old error
-
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // If backend returns error message
-        throw new Error(data.message || "Registration failed");
+      setError(""); 
+      const {confirmPassword, ...payload} = formData;
+      const res = await registerUser(payload);
+      console.log(res);
+      if (res.status === 201) {
+        localStorage.setItem("pendingEmail", formData.email);
+        navigate("/verify-email", { state: { email: formData.email } });
       }
-
-      console.log("✅ Registration successful:", data);
-      alert("Registration successful!");
-      // Optionally redirect: navigate("/login");
-
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
     }
 };
 
@@ -104,6 +99,15 @@ const Register: React.FC = () => {
             name="password"
             placeholder="Password"
             value={formData.password}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+           <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

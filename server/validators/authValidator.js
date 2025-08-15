@@ -8,7 +8,7 @@ export const validateRegister = body => {
         'string.email': 'Invalid email format.',
         'string.empty': 'Email is required.'
       }),
-        password: Joi.string().min(6).max(20).required().message({ 'string.empty': 'Password is required', 'string.min': 'Password must be at least 6 characters long.', 'string.max': 'Password cannot exceed 20 characters.'}),
+        password: Joi.string().min(6).max(20).required().messages({ 'string.empty': 'Password is required', 'string.min': 'Password must be at least 6 characters long.', 'string.max': 'Password cannot exceed 20 characters.'})
     });
     return registerSchema.validate(body);
 }
@@ -33,7 +33,7 @@ export const validateLogin = body => {
         'string.email': 'Invalid email format.',
         'string.empty': 'Email is required.'
       }),
-    password: Joi.string().min(6).max(20).required().message({ 'string.empty': 'Password is required to Login', 'string.min': 'Password must be at least 6 characters long.', 'string.max': 'Password cannot exceed 20 characters.'}),
+    password: Joi.string().min(6).max(20).required().messages({ 'string.empty': 'Password is required to Login', 'string.min': 'Password must be at least 6 characters long.', 'string.max': 'Password cannot exceed 20 characters.'}),
   });
   return loginSchema.validate(body);
 }

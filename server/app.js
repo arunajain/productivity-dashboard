@@ -9,7 +9,10 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 var app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // your frontend URL
+  credentials: true
+}));
 
 app.use(logger('dev'));
 app.use(express.json());

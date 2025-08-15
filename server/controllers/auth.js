@@ -8,12 +8,15 @@ import sendEmail from '../utils/sendEmail.js';
 
 export const registerUser = async(req, res) => {
     try{
+       
         const { error } = validateRegister(req.body); //uses obj destructuring
         if (error) return res.status(422).json({msg: error.details[0].message});
 
         let {name, email, password} = req.body; //uses destructuring
         const chkUserExist = await findUserByEmail(email);
+        
         if(chkUserExist) return res.status(400).json({msg: 'User already exists with this email'});
+        console.log(req.body);
         const [firstName, lastName] = name.trim().split(' ');
         name = (firstName?.slice(0,1).toUpperCase()) + (firstName?.slice(1)?.toLowerCase()) + (lastName ? ' ' + lastName.slice(0,1).toUpperCase() + lastName?.slice(1)?.toLowerCase() : '');
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,14 +70,15 @@ export const verifyEmailCode = async(req, res) => {
 
 export const login = async(req, res) => {
     try {
+        console.log(req.body)
         const { error } = validateLogin(req.body);
         if(error) return res.status(422).json({msg : error.details[0].message});
         const {email, password} = req.body;
         const user = await findUserByEmail(email);
         console.log('user - ', user)
-        if(!user) res.status(401).json({success: false, msg: "User with that email does not exit", user: null});
+        if(!user) return res.status(401).json({success: false, msg: "User with given email does not exit", user: null});
 
-        if(!user.is_verified) res.status(403).json({success: false, msg: "Please verify your email before logging in.", user: null});
+        if(!user.is_verified) return res.status(403).json({success: false, msg: "Please verify your email before logging in.", user: null});
         
         const isMatch = await bcrypt.compare(password, user.password_hash);
         console.log(isMatch)

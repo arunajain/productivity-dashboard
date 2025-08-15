@@ -43,7 +43,8 @@ client/node_modules/
 jspm_packages/
 
 client/dist/
-
+server/package-lock.json
+client/package-lock.json
 
 #React test coverage output (if testing)
 client/coverage/
